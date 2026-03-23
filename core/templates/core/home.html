@@ -1,0 +1,94 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block public_content %}
+
+<header class="home-header">
+  <div class="home-header-content">
+    <div class="home-brand">
+      <span class="home-brand-icon">🦷</span>
+      <span class="home-brand-text">OdontoPro</span>
+    </div>
+
+    <a href="{% url 'login' %}" class="btn-header">
+      Entrar
+    </a>
+  </div>
+</header>
+
+<section class="hero-home">
+  <div class="hero-home-content">
+
+    <div class="hero-home-text">
+      <span class="hero-badge">Sistema odontológico profissional</span>
+
+      <h1>Gestão moderna para clínicas odontológicas</h1>
+
+      <p>
+        Organize consultas, pacientes, odontograma, relatórios e financeiro
+        em uma plataforma bonita, rápida e profissional.
+      </p>
+
+      <div class="hero-actions">
+        <a href="{% url 'login' %}" class="hero-btn-primary">
+          Entrar no sistema
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-home-card">
+      <div class="hero-mini-card">
+        <div class="hero-mini-top">
+          <span class="hero-mini-icon">🗓️</span>
+          <div class="hero-mini-title">Agenda moderna</div>
+        </div>
+        <div class="hero-mini-text">
+          Consultas por dia, semana, dentista e sala.
+        </div>
+      </div>
+
+      <div class="hero-mini-card">
+        <div class="hero-mini-top">
+          <span class="hero-mini-icon">🦷</span>
+          <div class="hero-mini-title">Odontograma visual</div>
+        </div>
+        <div class="hero-mini-text">
+          Registro clínico rápido, organizado e profissional.
+        </div>
+      </div>
+
+      <div class="hero-mini-card">
+        <div class="hero-mini-top">
+          <span class="hero-mini-icon">📁</span>
+          <div class="hero-mini-title">Controle completo</div>
+        </div>
+        <div class="hero-mini-text">
+          Pacientes, relatórios e financeiro em um só lugar.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="home-features">
+  <div class="home-feature-card">
+    <div class="home-feature-icon">👥</div>
+    <h3>Pacientes</h3>
+    <p>Cadastro completo com histórico, arquivos e odontograma.</p>
+  </div>
+
+  <div class="home-feature-card">
+    <div class="home-feature-icon">📅</div>
+    <h3>Consultas</h3>
+    <p>Agenda inteligente para recepção, dentistas e administração.</p>
+  </div>
+
+  <div class="home-feature-card">
+    <div class="home-feature-icon">📊</div>
+    <h3>Relatórios</h3>
+    <p>Visualize desempenho, faturamento e produtividade da clínica.</p>
+  </div>
+</section>
+
+{% endblock %}

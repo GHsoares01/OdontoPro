@@ -1,0 +1,109 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Agenda Completa</h1>
+    <p class="subtitle">Todas as consultas organizadas por data</p>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'consultas_hoje' %}">Agenda do dia</a>
+    <a class="btn" href="{% url 'cadastrar_consulta' %}">Nova consulta</a>
+  </div>
+</div>
+
+<section class="agenda-board agenda-board-clean">
+
+  {% if agenda %}
+    {% for data, consultas in agenda.items %}
+      <div class="agenda-day-card agenda-day-card-clean">
+
+        <div class="agenda-day-header agenda-day-header-clean">
+          <div>
+            <h3>{{ data }}</h3>
+            <span>{{ consultas|length }} consulta{{ consultas|length|pluralize }}</span>
+          </div>
+        </div>
+
+        <div class="agenda-day-body agenda-day-body-clean">
+          {% for consulta in consultas %}
+            <div class="agenda-item agenda-item-clean" style="border-left: 6px solid {{ consulta.cor_dentista }} !important;">
+
+              <div class="agenda-item-time">
+                {{ consulta.hora|time:"H:i" }}
+              </div>
+
+              <div class="agenda-item-main">
+                <div class="agenda-item-top">
+                  <div class="agenda-patient">
+                    {{ consulta.paciente.nome }}
+                  </div>
+
+                  <div class="agenda-item-status">
+                    {% if consulta.status == "agendado" %}
+                      <span class="badge badge-blue">Agendado</span>
+                    {% elif consulta.status == "confirmado" %}
+                      <span class="badge badge-green">Confirmado</span>
+                    {% elif consulta.status == "cancelado" %}
+                      <span class="badge badge-red">Cancelado</span>
+                    {% elif consulta.status == "concluido" %}
+                      <span class="badge badge-gray">Concluído</span>
+                    {% else %}
+                      <span class="badge badge-gray">{{ consulta.status }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="agenda-meta">
+                  <div class="dentista-label-color">
+                    <span class="dentista-label-dot" style="background: {{ consulta.cor_dentista }};"></span>
+                    <strong>Dentista:</strong>
+                    {% if consulta.dentista %}
+                      {{ consulta.dentista.nome }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </div>
+
+                  <div style="margin-top: 6px;">
+                    <strong>Sala:</strong>
+                    {% if consulta.sala %}
+                      {{ consulta.sala.nome }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </div>
+                </div>
+
+                {% if consulta.observacoes %}
+                  <div class="agenda-note">
+                    {{ consulta.observacoes }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="agenda-item-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'editar_consulta' consulta.pk %}">
+                  Editar
+                </a>
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="day-empty-state">
+      <div class="day-empty-icon">📅</div>
+      <h3>Nenhuma consulta cadastrada</h3>
+      <p>Comece criando a primeira consulta da clínica.</p>
+      <a class="btn" href="{% url 'cadastrar_consulta' %}">Cadastrar consulta</a>
+    </div>
+  {% endif %}
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="page-header">
+  <h1>Novo Procedimento</h1>
+  <a class="btn btn-ghost" href="{% url 'detalhes_paciente' paciente.id %}">
+    Voltar
+  </a>
+</div>
+
+<div class="card-form">
+  <p><b>Paciente:</b> {{ paciente.nome }} (CPF: {{ paciente.cpf }})</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<div class="page-header">
+
+<div>
+<h1 class="title">Dentistas</h1>
+<p class="subtitle">Profissionais cadastrados na clínica</p>
+</div>
+
+<div class="actions">
+<a href="{% url 'cadastrar_dentista' %}" class="btn">
+Novo Dentista
+</a>
+</div>
+
+</div>
+
+
+<section class="card">
+
+<div class="table-wrap">
+
+<table class="table">
+
+<thead>
+<tr>
+
+<th>Nome</th>
+<th>CRO</th>
+<th>Telefone</th>
+<th>Email</th>
+<th>Ações</th>
+
+</tr>
+</thead>
+
+<tbody>
+
+{% for dentista in dentistas %}
+
+<tr>
+
+<td>
+<strong>{{ dentista.nome }}</strong>
+</td>
+
+<td>
+{{ dentista.cro|default:"-" }}
+</td>
+
+<td>
+{{ dentista.telefone|default:"-" }}
+</td>
+
+<td>
+{{ dentista.email|default:"-" }}
+</td>
+
+<td style="display:flex; gap:8px;">
+
+<a href="{% url 'editar_dentista' dentista.pk %}" class="btn btn-ghost">
+Editar
+</a>
+
+<a href="{% url 'deletar_dentista' dentista.pk %}" class="btn btn-danger">
+Deletar
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5">
+Nenhum dentista cadastrado.
+</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+{% endblock %}

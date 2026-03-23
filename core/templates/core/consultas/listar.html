@@ -1,0 +1,112 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Agenda do Dia</h1>
+    {% if data %}
+    <p class="subtitle">{{ data|date:"d/m/Y" }}</p>
+    {% else %}
+    <p class="subtitle">Todas as consultas</p>
+    {% endif %}
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'calendario_consultas' %}">Calendário</a>
+    <a class="btn" href="{% url 'cadastrar_consulta' %}">Nova consulta</a>
+  </div>
+</div>
+
+
+<div class="card">
+
+{% if consultas %}
+
+<div style="display:flex; flex-direction:column; gap:14px;">
+
+{% for consulta in consultas %}
+
+<div style="
+display:grid;
+grid-template-columns: 120px 1fr auto;
+gap:18px;
+align-items:center;
+padding:18px;
+border:1px solid #e5e7eb;
+border-radius:16px;
+background:#f8fafc;
+">
+
+<div>
+<div style="
+font-size:30px;
+font-weight:800;
+color:#2563eb;
+line-height:1;
+">
+{{ consulta.hora }}
+</div>
+</div>
+
+
+<div>
+
+<div style="
+font-size:18px;
+font-weight:800;
+color:#0f172a;
+margin-bottom:6px;
+">
+{{ consulta.paciente.nome }}
+</div>
+
+<div class="subtitle" style="margin-bottom:6px;">
+Dentista: {{ consulta.dentista|default:"-" }}
+</div>
+
+{% if consulta.observacoes %}
+<div class="subtitle">
+{{ consulta.observacoes }}
+</div>
+{% endif %}
+
+</div>
+
+
+<div style="display:flex; flex-direction:column; gap:8px; min-width:140px;">
+
+{% if consulta.status == "agendado" %}
+<span class="badge badge-blue">Agendado</span>
+{% elif consulta.status == "confirmado" %}
+<span class="badge badge-green">Confirmado</span>
+{% elif consulta.status == "cancelado" %}
+<span class="badge badge-red">Cancelado</span>
+{% else %}
+<span class="badge badge-gray">Concluído</span>
+{% endif %}
+
+<a class="btn btn-ghost" href="{% url 'editar_consulta' consulta.pk %}">
+Editar
+</a>
+
+<a class="btn btn-danger" href="{% url 'deletar_consulta' consulta.pk %}">
+Excluir
+</a>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<p class="muted">Nenhuma consulta encontrada.</p>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

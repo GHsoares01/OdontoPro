@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Deletar dentista</h1>
+    <p class="subtitle">{{ dentista.nome }}</p>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'lista_dentistas' %}">Voltar</a>
+  </div>
+</div>
+
+<section class="card" style="max-width:760px;">
+  <p>Tem certeza que deseja deletar este dentista?</p>
+
+  <p><strong>Nome:</strong> {{ dentista.nome }}</p>
+  <p><strong>CRO:</strong> {{ dentista.cro|default:"-" }}</p>
+
+  <form method="post" style="margin-top:16px;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+  </form>
+</section>
+
+{% endblock %}

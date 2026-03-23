@@ -1,0 +1,300 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+
+<div class="dashboard-shell">
+
+  <div class="dashboard-topbar">
+    <div>
+      <p class="dashboard-kicker">Visão geral da clínica</p>
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="dashboard-subtitle">
+        Acompanhe pacientes, consultas, faturamento e alertas em um só lugar.
+      </p>
+    </div>
+
+    <div class="dashboard-top-actions">
+      <button type="button"
+              onclick="abrirModal('{% url 'cadastrar_paciente' %}', 'Novo Paciente')"
+              class="dashboard-btn dashboard-btn-primary">
+        + Novo paciente
+      </button>
+
+      <a href="{% url 'cadastrar_consulta' %}" class="dashboard-btn dashboard-btn-secondary">
+        + Nova consulta
+      </a>
+    </div>
+  </div>
+
+  <div class="dashboard-stats-grid">
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-icon">👥</div>
+      <div class="dashboard-stat-content">
+        <span class="dashboard-stat-label">Pacientes</span>
+        <strong class="dashboard-stat-value" id="total-pacientes">{{ total_pacientes|default:"0" }} </strong>
+        <small class="dashboard-stat-note">Total cadastrados</small>
+      </div>
+    </div>
+
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-icon">🦷</div>
+      <div class="dashboard-stat-content">
+        <span class="dashboard-stat-label">Procedimentos</span>
+        <strong class="dashboard-stat-value">{{ total_procedimentos|default:"0" }}</strong>
+        <small class="dashboard-stat-note">Registrados no sistema</small>
+      </div>
+    </div>
+
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-icon">🧑‍⚕️</div>
+      <div class="dashboard-stat-content">
+        <span class="dashboard-stat-label">Dentistas</span>
+        <strong class="dashboard-stat-value">{{ total_dentistas|default:"0" }}</strong>
+        <small class="dashboard-stat-note">Profissionais ativos</small>
+      </div>
+    </div>
+
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-icon">💵</div>
+      <div class="dashboard-stat-content">
+        <span class="dashboard-stat-label">Faturamento hoje</span>
+        <strong class="dashboard-stat-value">R$ {{ faturamento_hoje|default:"0" }}</strong>
+        <small class="dashboard-stat-note">Entrada do dia</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-main-grid">
+
+    <div class="dashboard-main-left">
+
+      <div class="dashboard-panel dashboard-highlight-panel">
+        <div class="dashboard-panel-head">
+          <div>
+            <h3>Resumo rápido</h3>
+            <p>Indicadores principais da rotina da clínica.</p>
+          </div>
+        </div>
+
+        <div class="dashboard-mini-grid">
+          <div class="dashboard-mini-card">
+            <span class="mini-label">Consultas hoje</span>
+            <strong class="mini-value">{{ consultas_hoje|length|default:"0" }}</strong>
+            {% if consultas_hoje|length == 0 %}
+              <small class="mini-status mini-status-danger">Nenhuma consulta marcada</small>
+            {% else %}
+              <small class="mini-status mini-status-success">Dia com movimento</small>
+            {% endif %}
+          </div>
+
+          <div class="dashboard-mini-card">
+            <span class="mini-label">Consultas na semana</span>
+            <strong class="mini-value">{{ consultas_semana|default:"0" }}</strong>
+            <small class="mini-status mini-status-info">Acompanhamento semanal</small>
+          </div>
+
+          <div class="dashboard-mini-card">
+            <span class="mini-label">Faturamento do mês</span>
+            <strong class="mini-value">R$ {{ faturamento_mes|default:"0" }}</strong>
+            <small class="mini-status mini-status-success">Resultado acumulado</small>
+          </div>
+
+          <div class="dashboard-mini-card">
+            <span class="mini-label">Próximas consultas</span>
+            <strong class="mini-value">{{ proximas_consultas|length|default:"0" }}</strong>
+            {% if proximas_consultas|length == 0 %}
+              <small class="mini-status mini-status-warning">Sem atendimentos futuros</small>
+            {% else %}
+              <small class="mini-status mini-status-info">Atendimentos programados</small>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-panel">
+        <div class="dashboard-panel-head">
+          <div>
+            <h3>Agenda do dia</h3>
+            <p>Consultas agendadas para hoje.</p>
+          </div>
+          <a href="{% url 'consultas_hoje' %}" class="dashboard-link-inline">Ver agenda</a>
+        </div>
+
+        {% if consultas_hoje %}
+          <div class="dashboard-list">
+            {% for consulta in consultas_hoje %}
+              <div class="dashboard-list-item">
+                <div class="dashboard-list-time">
+                  {{ consulta.hora|time:"H:i" }}
+                </div>
+
+                <div class="dashboard-list-body">
+                  <strong>{{ consulta.paciente.nome }}</strong>
+                  <p>
+                    {% if consulta.dentista %}{{ consulta.dentista.nome }}{% endif %}
+                    {% if consulta.sala %} • {{ consulta.sala.nome }}{% endif %}
+                  </p>
+                </div>
+
+                <div class="dashboard-list-status">
+                  {{ consulta.status|default:"Agendada" }}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="dashboard-empty dashboard-empty-soft">
+            <div class="dashboard-empty-icon">📭</div>
+            <div>
+              <strong>Nenhuma consulta agendada para hoje.</strong>
+              <p>Seu dia está livre no momento.</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="dashboard-panel">
+        <div class="dashboard-panel-head">
+          <div>
+            <h3>Próximas consultas</h3>
+            <p>Próximos atendimentos programados.</p>
+          </div>
+        </div>
+
+        {% if proximas_consultas %}
+          <div class="dashboard-table-wrap">
+            <table class="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Paciente</th>
+                  <th>Data</th>
+                  <th>Hora</th>
+                  <th>Dentista</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for consulta in proximas_consultas %}
+                  <tr>
+                    <td>{{ consulta.paciente.nome }}</td>
+                    <td>{{ consulta.data|date:"d/m/Y" }}</td>
+                    <td>{{ consulta.hora|time:"H:i" }}</td>
+                    <td>
+                      {% if consulta.dentista %}
+                        {{ consulta.dentista.nome }}
+                      {% else %}
+                        —
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="dashboard-empty dashboard-empty-soft">
+            <div class="dashboard-empty-icon">🗓️</div>
+            <div>
+              <strong>Não há próximas consultas cadastradas.</strong>
+              <p>Cadastre novos atendimentos para visualizar aqui.</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <div class="dashboard-main-right">
+
+      <div class="dashboard-panel">
+        <div class="dashboard-panel-head">
+          <div>
+            <h3>Atalhos</h3>
+            <p>Acesso rápido às principais áreas.</p>
+          </div>
+        </div>
+
+        <div class="dashboard-shortcuts">
+          <a href="{% url 'lista_pacientes' %}" class="dashboard-shortcut-card">
+            <span class="shortcut-icon">👥</span>
+            <span class="shortcut-title">Pacientes</span>
+          </a>
+
+          <a href="{% url 'lista_consultas' %}" class="dashboard-shortcut-card">
+            <span class="shortcut-icon">📅</span>
+            <span class="shortcut-title">Consultas</span>
+          </a>
+
+          <a href="{% url 'agenda_completa' %}" class="dashboard-shortcut-card">
+            <span class="shortcut-icon">🗓️</span>
+            <span class="shortcut-title">Agenda</span>
+          </a>
+
+          <a href="{% url 'relatorio_financeiro' %}" class="dashboard-shortcut-card">
+            <span class="shortcut-icon">💰</span>
+            <span class="shortcut-title">Financeiro</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="dashboard-panel">
+        <div class="dashboard-panel-head">
+          <div>
+            <h3>Alertas</h3>
+            <p>Pontos importantes para atenção.</p>
+          </div>
+        </div>
+
+        {% if alertas %}
+          <div class="dashboard-alerts">
+            {% for alerta in alertas %}
+              <div class="dashboard-alert-item">
+                <span class="dashboard-alert-dot"></span>
+                <div>{{ alerta }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="dashboard-empty dashboard-empty-soft">
+            <div class="dashboard-empty-icon">✅</div>
+            <div>
+              <strong>Nenhum alerta no momento.</strong>
+              <p>Tudo está sob controle na clínica.</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="dashboard-panel">
+        <div class="dashboard-panel-head">
+          <div>
+            <h3>Desempenho financeiro</h3>
+            <p>Comparativo simples do dia e do mês.</p>
+          </div>
+        </div>
+
+        <div class="dashboard-finance-box">
+          <div class="finance-line">
+            <span>Hoje</span>
+            <strong>R$ {{ faturamento_hoje|default:"0" }}</strong>
+          </div>
+
+          <div class="finance-line">
+            <span>Mês</span>
+            <strong>R$ {{ faturamento_mes|default:"0" }}</strong>
+          </div>
+
+          <div class="finance-progress">
+            <div class="finance-progress-bar"></div>
+          </div>
+
+          <small class="finance-note">
+            Indicador visual simples do desempenho atual.
+          </small>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'core/base.html' %}
+{% load core_extras %}
+{% block content %}
+
+<div class="page-header page-header-calendar">
+  <div>
+    <h1 class="title">Calendário de Consultas</h1>
+    <p class="subtitle">Visualização mensal da agenda da clínica</p>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'lista_consultas' %}">Ver lista</a>
+    <a class="btn" href="{% url 'cadastrar_consulta' %}">Nova consulta</a>
+    <a class="btn btn-ghost" href="{% url 'agenda_semanal' %}">Agenda semanal</a>
+  </div>
+</div>
+
+<section class="calendar-filters card" style="margin-bottom: 18px;">
+  <form method="get" class="calendar-filter-form">
+    <input type="hidden" name="mes" value="{{ mes }}">
+    <input type="hidden" name="ano" value="{{ ano }}">
+
+    <div class="calendar-filter-group">
+      <label for="dentista">Filtrar por dentista</label>
+      <select name="dentista" id="dentista" onchange="this.form.submit()">
+        <option value="">Todos os dentistas</option>
+        {% for dentista in dentistas %}
+          <option value="{{ dentista.id }}" {% if dentista_selecionado == dentista.id|stringformat:"s" %}selected{% endif %}>
+            {{ dentista.nome }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+</section>
+
+<section class="calendar-monthbar">
+  <a class="calendar-nav-btn" href="{% url 'calendario_consultas' %}?mes={{ mes_anterior }}&ano={{ ano_anterior }}{% if dentista_selecionado %}&dentista={{ dentista_selecionado }}{% endif %}">
+    ← Mês anterior
+  </a>
+
+  <div class="calendar-monthbar-center">
+    <span class="calendar-month-label">Agenda mensal</span>
+    <h2 class="calendar-month-name">{{ nome_mes }} de {{ ano }}</h2>
+  </div>
+
+  <a class="calendar-nav-btn" href="{% url 'calendario_consultas' %}?mes={{ proximo_mes }}&ano={{ proximo_ano }}{% if dentista_selecionado %}&dentista={{ dentista_selecionado }}{% endif %}">
+    Próximo mês →
+  </a>
+</section>
+
+<section class="calendar-grid-wrap">
+  <div class="calendar-weekdays">
+    <div>Dom</div>
+    <div>Seg</div>
+    <div>Ter</div>
+    <div>Qua</div>
+    <div>Qui</div>
+    <div>Sex</div>
+    <div>Sáb</div>
+  </div>
+
+  <div class="calendar-grid">
+    {% for semana in dias_do_mes %}
+      {% for dia in semana %}
+        <div class="calendar-day {% if dia.month != mes %}calendar-day-other{% endif %} {% if dia == hoje %}calendar-day-today{% endif %}">
+
+          <div class="calendar-day-top">
+            <div class="calendar-day-left">
+              <div class="calendar-day-number">{{ dia.day }}</div>
+            </div>
+
+            {% if dia.month == mes %}
+              <div class="calendar-day-actions">
+                <a class="calendar-mini-btn" href="{% url 'lista_consultas' %}?data={{ dia|date:'Y-m-d' }}">
+                  Ver dia
+                </a>
+                <a class="calendar-mini-btn calendar-mini-btn-primary" href="{% url 'cadastrar_consulta' %}?data={{ dia|date:'Y-m-d' }}">
+                  + Consulta
+                </a>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="calendar-events">
+            {% if dia.month == mes %}
+              {% with consultas_dia=consultas_por_dia|get_item:dia %}
+                {% if consultas_dia %}
+                  <div class="calendar-day-count">
+                    {{ consultas_dia|length }} consulta{{ consultas_dia|length|pluralize }}
+                  </div>
+
+                  {% for consulta in consultas_dia|slice:":2" %}
+                    <a class="calendar-event-link" href="{% url 'editar_consulta' consulta.pk %}">
+                      <div class="calendar-event event-{{ consulta.status }}" style="border-left: 6px solid {{ consulta.cor_dentista }};">
+                        <div class="calendar-event-hour">
+                          {{ consulta.hora|time:"H:i" }}
+                        </div>
+
+                        <div class="calendar-event-name">
+                          {{ consulta.paciente.nome }}
+                        </div>
+
+                        <div class="calendar-dentista-color">
+                          <span class="calendar-dentista-dot" style="background: {{ consulta.cor_dentista }};"></span>
+                          {% if consulta.dentista %}
+                            {{ consulta.dentista.nome }}
+                          {% else %}
+                            Sem dentista
+                          {% endif %}
+                        </div>
+
+                        <div class="calendar-event-meta">
+                          <strong>Sala:</strong>
+                          {% if consulta.sala %}
+                            {{ consulta.sala.nome }}
+                          {% else %}
+                            -
+                          {% endif %}
+                        </div>
+
+                        <div class="calendar-event-status">
+                          {% if consulta.status == "agendado" %}
+                            <span class="badge badge-blue">Agendado</span>
+                          {% elif consulta.status == "confirmado" %}
+                            <span class="badge badge-green">Confirmado</span>
+                          {% elif consulta.status == "cancelado" %}
+                            <span class="badge badge-red">Cancelado</span>
+                          {% elif consulta.status == "concluido" %}
+                            <span class="badge badge-gray">Concluído</span>
+                          {% else %}
+                            <span class="badge badge-gray">{{ consulta.status }}</span>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </a>
+                  {% endfor %}
+
+                  {% if consultas_dia|length > 2 %}
+                    <a class="calendar-more-link" href="{% url 'lista_consultas' %}?data={{ dia|date:'Y-m-d' }}">
+                      + {{ consultas_dia|length|add:"-2" }} mais
+                    </a>
+                  {% endif %}
+                {% else %}
+                  <div class="calendar-empty">Sem consultas</div>
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+          </div>
+
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

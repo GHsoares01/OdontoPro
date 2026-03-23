@@ -1,0 +1,43 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Relatório por Dentista</h1>
+    <p class="subtitle">
+      Consultas, procedimentos e faturamento por profissional
+    </p>
+  </div>
+</div>
+
+<section class="card">
+  {% if dentistas %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Dentista</th>
+            <th>Consultas</th>
+            <th>Procedimentos</th>
+            <th>Faturamento</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for dentista in dentistas %}
+            <tr>
+              <td>{{ dentista.nome }}</td>
+              <td>{{ dentista.total_consultas|default:0 }}</td>
+              <td>{{ dentista.total_procedimentos|default:0 }}</td>
+              <td>R$ {{ dentista.faturamento|default:0|floatformat:2 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">Nenhum dentista encontrado.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Deletar arquivo</h1>
+    <a href="{% url 'detalhes_paciente' arquivo.paciente.pk %}" class="btn btn-ghost">Voltar</a>
+</div>
+
+<div class="card" style="max-width: 700px;">
+    <p>Tem certeza que deseja deletar este arquivo?</p>
+
+    <p><strong>Paciente:</strong> {{ arquivo.paciente.nome }}</p>
+    <p><strong>Título:</strong> {{ arquivo.titulo }}</p>
+    <p><strong>Tipo:</strong> {{ arquivo.get_tipo_display }}</p>
+
+    <form method="post" style="margin-top:16px; display:flex; gap:10px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        <a href="{% url 'detalhes_paciente' arquivo.paciente.pk %}" class="btn btn-ghost">Cancelar</a>
+    </form>
+</div>
+
+{% endblock %}

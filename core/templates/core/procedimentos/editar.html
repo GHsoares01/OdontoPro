@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Editar Procedimento</h1>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'detalhes_paciente' form.instance.paciente.pk %}">
+      Voltar
+    </a>
+  </div>
+</div>
+
+<section class="card">
+  <form method="post" class="form">
+    {% csrf_token %}
+
+    <div class="field">
+      <label>Descrição</label>
+      {{ form.descricao }}
+    </div>
+
+    <div class="field">
+      <label>Valor</label>
+      {{ form.valor }}
+    </div>
+
+    <div class="field">
+      <label>Data</label>
+      {{ form.data }}
+    </div>
+
+    <button type="submit" class="btn primary">
+      Salvar Alterações
+    </button>
+  </form>
+</section>
+
+{% endblock %}

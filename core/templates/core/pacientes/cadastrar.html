@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Novo Paciente</h1>
+  <a class="btn btn-ghost" href="{% url 'lista_pacientes' %}">Voltar</a>
+</div>
+
+<div class="card">
+  <form method="POST" action="{% url 'cadastrar_paciente' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn" type="submit">Salvar</button>
+  </form>
+</div>
+
+{% endblock %}

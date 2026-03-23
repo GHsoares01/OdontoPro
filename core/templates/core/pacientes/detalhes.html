@@ -1,0 +1,481 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load core_extras %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">{{ paciente.nome }}</h1>
+    <p class="subtitle">
+      CPF: {{ paciente.cpf }} • Telefone: {{ paciente.telefone|default:"-" }}
+    </p>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'lista_pacientes' %}">Voltar</a>
+    <a class="btn btn-ghost" href="{% url 'editar_paciente' paciente.pk %}">Editar</a>
+    <a class="btn btn-ghost" href="{% url 'gerar_pdf_paciente' paciente.pk %}">Gerar PDF</a>
+    <a class="btn btn-danger" href="{% url 'deletar_paciente' paciente.pk %}">Deletar</a>
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <h2 class="card-title">Registrar procedimento</h2>
+
+    <form method="post" action="{% url 'adicionar_procedimento' paciente.pk %}" class="form">
+      {% csrf_token %}
+      {{ form_proc.as_p }}
+      <button type="submit" class="btn">Salvar procedimento</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">Histórico de procedimentos</h2>
+
+    <p class="subtitle" style="margin-bottom:12px;">
+      Total gasto pelo paciente:
+      <strong>R$ {{ total_gasto|floatformat:2 }}</strong>
+    </p>
+
+    {% if procedimentos %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Dentista</th>
+              <th>Serviço</th>
+              <th>Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for proc in procedimentos %}
+              <tr>
+                <td>{{ proc.data|date:"d/m/Y" }}</td>
+                <td>{{ proc.dentista|default:"-" }}</td>
+                <td>{{ proc.descricao }}</td>
+                <td>R$ {{ proc.valor }}</td>
+                <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <a class="btn btn-ghost" href="{% url 'editar_procedimento' proc.pk %}">Editar</a>
+                  <a class="btn btn-danger" href="{% url 'deletar_procedimento' proc.pk %}">Deletar</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="muted">Nenhum procedimento registrado ainda.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card" style="margin-top:18px;">
+  <h2 class="card-title">Odontograma</h2>
+
+  <p class="subtitle" style="margin-bottom:14px;">
+    Clique em um dente para registrar ou editar rapidamente.
+  </p>
+
+  <div class="odontograma-real">
+    <div class="linha-dentes">
+      {% for numero in dentes_superiores %}
+        {% with item=odontograma_dict|get_item:numero %}
+          <button
+            type="button"
+            id="dente-{{ numero }}"
+            class="dente-container {% if item %}status-{{ item.status }}{% endif %}"
+            data-dente="{{ numero }}"
+            data-status="{% if item %}{{ item.status }}{% else %}saudavel{% endif %}"
+            data-observacoes="{% if item and item.observacoes %}{{ item.observacoes|escapejs }}{% endif %}"
+            title="Dente {{ numero }}"
+          >
+            <img src="{% static 'core/img/dentes/'|add:numero|add:'.png' %}" class="dente-img" alt="Dente {{ numero }}">
+            <span class="numero-dente">{{ numero }}</span>
+          </button>
+        {% endwith %}
+      {% endfor %}
+    </div>
+
+    <div class="linha-dentes">
+      {% for numero in dentes_superiores2 %}
+        {% with item=odontograma_dict|get_item:numero %}
+          <button
+            type="button"
+            id="dente-{{ numero }}"
+            class="dente-container {% if item %}status-{{ item.status }}{% endif %}"
+            data-dente="{{ numero }}"
+            data-status="{% if item %}{{ item.status }}{% else %}saudavel{% endif %}"
+            data-observacoes="{% if item and item.observacoes %}{{ item.observacoes|escapejs }}{% endif %}"
+            title="Dente {{ numero }}"
+          >
+            <img src="{% static 'core/img/dentes/'|add:numero|add:'.png' %}" class="dente-img" alt="Dente {{ numero }}">
+            <span class="numero-dente">{{ numero }}</span>
+          </button>
+        {% endwith %}
+      {% endfor %}
+    </div>
+
+    <div class="odontograma-espaco"></div>
+
+    <div class="linha-dentes">
+      {% for numero in dentes_inferiores %}
+        {% with item=odontograma_dict|get_item:numero %}
+          <button
+            type="button"
+            id="dente-{{ numero }}"
+            class="dente-container {% if item %}status-{{ item.status }}{% endif %}"
+            data-dente="{{ numero }}"
+            data-status="{% if item %}{{ item.status }}{% else %}saudavel{% endif %}"
+            data-observacoes="{% if item and item.observacoes %}{{ item.observacoes|escapejs }}{% endif %}"
+            title="Dente {{ numero }}"
+          >
+            <img src="{% static 'core/img/dentes/'|add:numero|add:'.png' %}" class="dente-img" alt="Dente {{ numero }}">
+            <span class="numero-dente">{{ numero }}</span>
+          </button>
+        {% endwith %}
+      {% endfor %}
+    </div>
+
+    <div class="linha-dentes">
+      {% for numero in dentes_inferiores2 %}
+        {% with item=odontograma_dict|get_item:numero %}
+          <button
+            type="button"
+            id="dente-{{ numero }}"
+            class="dente-container {% if item %}status-{{ item.status }}{% endif %}"
+            data-dente="{{ numero }}"
+            data-status="{% if item %}{{ item.status }}{% else %}saudavel{% endif %}"
+            data-observacoes="{% if item and item.observacoes %}{{ item.observacoes|escapejs }}{% endif %}"
+            title="Dente {{ numero }}"
+          >
+            <img src="{% static 'core/img/dentes/'|add:numero|add:'.png' %}" class="dente-img" alt="Dente {{ numero }}">
+            <span class="numero-dente">{{ numero }}</span>
+          </button>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="odonto-legend">
+    <span class="legend-item"><span class="legend-color odonto-saudavel"></span> Saudável</span>
+    <span class="legend-item"><span class="legend-color odonto-carie"></span> Cárie</span>
+    <span class="legend-item"><span class="legend-color odonto-restauracao"></span> Restauração</span>
+    <span class="legend-item"><span class="legend-color odonto-canal"></span> Canal</span>
+    <span class="legend-item"><span class="legend-color odonto-extracao"></span> Extração</span>
+    <span class="legend-item"><span class="legend-color odonto-implante"></span> Implante</span>
+    <span class="legend-item"><span class="legend-color odonto-ausente"></span> Ausente</span>
+    <span class="legend-item"><span class="legend-color odonto-vazio"></span> Não registrado</span>
+  </div>
+
+  <div style="margin-top:24px;">
+    {% if odontograma %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Dente</th>
+              <th>Status</th>
+              <th>Observação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in odontograma %}
+              <tr>
+                <td><strong>{{ item.dente }}</strong></td>
+                <td>{{ item.get_status_display }}</td>
+                <td>{{ item.observacoes|default:"-" }}</td>
+                <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <a href="{% url 'editar_odontograma_item' item.pk %}" class="btn btn-ghost">Editar</a>
+                  <a href="{% url 'deletar_odontograma_item' item.pk %}" class="btn btn-danger">Deletar</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="muted">Nenhum item registrado no odontograma.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card" style="margin-top:18px;">
+  <h2 class="card-title">Histórico do odontograma</h2>
+
+  {% if historico_odontograma %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Dente</th>
+            <th>Status</th>
+            <th>Observação</th>
+            <th>Dentista</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for hist in historico_odontograma %}
+            <tr>
+              <td>{{ hist.criado_em|date:"d/m/Y H:i" }}</td>
+              <td><strong>{{ hist.dente }}</strong></td>
+              <td>{{ hist.get_status_display }}</td>
+              <td>{{ hist.observacoes|default:"-" }}</td>
+              <td>{{ hist.dentista|default:"-" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">Nenhum histórico registrado ainda.</p>
+  {% endif %}
+</section>
+
+<section class="card" style="margin-top:18px;">
+  <h2 class="card-title">Arquivos do paciente</h2>
+  <p class="subtitle" style="margin-bottom:14px;">
+    Envie raio-x, fotos ou documentos do paciente.
+  </p>
+
+  <form method="post"
+        enctype="multipart/form-data"
+        action="{% url 'adicionar_arquivo_paciente' paciente.pk %}"
+        class="form">
+    {% csrf_token %}
+    {{ form_arquivo.as_p }}
+    <button type="submit" class="btn">Enviar arquivo</button>
+  </form>
+
+  <div style="margin-top:24px;">
+    {% if arquivos %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Tipo</th>
+              <th>Arquivo</th>
+              <th>Data</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for arq in arquivos %}
+              <tr>
+                <td>{{ arq.titulo }}</td>
+                <td>{{ arq.get_tipo_display }}</td>
+                <td>
+                  <a href="{{ arq.arquivo.url }}" target="_blank" class="link">Abrir</a>
+                </td>
+                <td>{{ arq.enviado_em|date:"d/m/Y H:i" }}</td>
+                <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <a href="{{ arq.arquivo.url }}" target="_blank" class="btn btn-ghost">Abrir</a>
+                  <a href="{% url 'deletar_arquivo_paciente' arq.pk %}" class="btn btn-danger">Deletar</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="muted">Nenhum arquivo enviado ainda.</p>
+    {% endif %}
+  </div>
+</section>
+
+<div class="odonto-modal-backdrop" id="odontoModalBackdrop">
+  <div class="odonto-modal">
+    <div class="odonto-modal-header">
+      <div>
+        <h3 id="odontoModalTitle">Editar dente</h3>
+        <p class="muted" id="odontoModalSubtitle">Atualize o status do dente</p>
+      </div>
+      <button type="button" class="odonto-modal-close" id="odontoModalClose">×</button>
+    </div>
+
+    <form method="post" action="{% url 'salvar_odontograma_ajax' paciente.pk %}" id="odontoModalForm">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="modal_dente">Dente</label>
+        <input type="text" id="modal_dente_label" disabled>
+        <input type="hidden" name="dente" id="modal_dente">
+      </div>
+
+      <div class="form-group">
+        <label for="modal_status">Status</label>
+        <select name="status" id="modal_status" required>
+          <option value="saudavel">Saudável</option>
+          <option value="carie">Cárie</option>
+          <option value="restauracao">Restauração</option>
+          <option value="canal">Canal</option>
+          <option value="extracao">Extração</option>
+          <option value="implante">Implante</option>
+          <option value="ausente">Ausente</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="modal_observacoes">Observações</label>
+        <textarea name="observacoes" id="modal_observacoes" rows="4" placeholder="Digite uma observação sobre o dente"></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn">Salvar no odontograma</button>
+        <button type="button" class="btn btn-ghost" id="odontoModalCancel">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const modal = document.getElementById("odontoModalBackdrop");
+  const closeBtn = document.getElementById("odontoModalClose");
+  const cancelBtn = document.getElementById("odontoModalCancel");
+  const form = document.getElementById("odontoModalForm");
+
+  const inputDente = document.getElementById("modal_dente");
+  const inputDenteLabel = document.getElementById("modal_dente_label");
+  const inputStatus = document.getElementById("modal_status");
+  const inputObservacoes = document.getElementById("modal_observacoes");
+  const modalTitle = document.getElementById("odontoModalTitle");
+  const modalSubtitle = document.getElementById("odontoModalSubtitle");
+
+  function getCookie(name) {
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+
+        if (cookie.startsWith(name + "=")) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+
+    return cookieValue;
+  }
+
+  const csrftoken = getCookie("csrftoken");
+
+  function abrirModal(dente, status, observacoes) {
+    if (!modal) return;
+
+    inputDente.value = dente || "";
+    inputDenteLabel.value = dente || "";
+    inputStatus.value = status || "saudavel";
+    inputObservacoes.value = observacoes || "";
+
+    modalTitle.textContent = "Editar dente " + dente;
+
+    const statusLabels = {
+      saudavel: "Saudável",
+      carie: "Cárie",
+      restauracao: "Restauração",
+      canal: "Canal",
+      extracao: "Extração",
+      implante: "Implante",
+      ausente: "Ausente",
+      outro: "Outro"
+    };
+
+    modalSubtitle.textContent = "Status atual: " + (statusLabels[status] || "Não registrado");
+    modal.classList.add("active");
+  }
+
+  function fecharModal() {
+    if (!modal) return;
+
+    modal.classList.remove("active");
+
+    document.querySelectorAll(".dente-container").forEach(function (item) {
+      item.classList.remove("active-tooth");
+    });
+  }
+
+  function atualizarVisualDente(dente, status, observacoes) {
+    const tooth = document.getElementById("dente-" + dente);
+    if (!tooth) return;
+
+    tooth.dataset.status = status;
+    tooth.dataset.observacoes = observacoes || "";
+    tooth.className = "dente-container status-" + status;
+    tooth.classList.add("active-tooth");
+  }
+
+  document.addEventListener("click", function (e) {
+    const tooth = e.target.closest(".dente-container");
+
+    if (tooth) {
+      document.querySelectorAll(".dente-container").forEach(function (item) {
+        item.classList.remove("active-tooth");
+      });
+
+      tooth.classList.add("active-tooth");
+
+      abrirModal(
+        tooth.dataset.dente,
+        tooth.dataset.status,
+        tooth.dataset.observacoes
+      );
+    }
+
+    if (e.target === closeBtn || e.target === cancelBtn) {
+      fecharModal();
+    }
+
+    if (e.target === modal) {
+      fecharModal();
+    }
+  });
+
+  if (form) {
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+          atualizarVisualDente(data.dente, data.status, data.observacoes);
+          fecharModal();
+        } else {
+          alert(data.erro || "Não foi possível salvar.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao salvar no odontograma.");
+      }
+    });
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      fecharModal();
+    }
+  });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,240 @@
+{% load static %}
+{% load core_extras %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OdontoPro</title>
+  <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+</head>
+<body>
+
+  {% if request.user.is_authenticated %}
+    <div class="layout">
+
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-brand">
+            <span class="sidebar-brand-icon">🦷</span>
+            <div>
+              <h2>OdontoPro</h2>
+              <p class="sidebar-subtitle">Sistema clínico</p>
+            </div>
+          </div>
+        </div>
+
+        <ul class="sidebar-menu">
+          <li>
+            <a href="{% url 'dashboard' %}" class="sidebar-link">
+              <span class="sidebar-link-icon">📊</span>
+              <span>Dashboard</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="{% url 'lista_pacientes' %}" class="sidebar-link">
+              <span class="sidebar-link-icon">👥</span>
+              <span>Pacientes</span>
+            </a>
+          </li>
+
+          {% if request.user|has_group:"Administrador" or request.user|has_group:"Recepcao" or request.user|has_group:"Dentista" %}
+            <li>
+              <a href="{% url 'lista_consultas' %}" class="sidebar-link">
+                <span class="sidebar-link-icon">🗓️</span>
+                <span>Consultas</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="{% url 'consultas_hoje' %}" class="sidebar-link">
+                <span class="sidebar-link-icon">⏰</span>
+                <span>Agenda do Dia</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="{% url 'agenda_completa' %}" class="sidebar-link">
+                <span class="sidebar-link-icon">📅</span>
+                <span>Agenda Completa</span>
+              </a>
+            </li>
+          {% endif %}
+
+          {% if request.user|has_group:"Administrador" %}
+            <li>
+              <a href="{% url 'lista_dentistas' %}" class="sidebar-link">
+                <span class="sidebar-link-icon">🧑‍⚕️</span>
+                <span>Dentistas</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="{% url 'relatorio_financeiro' %}" class="sidebar-link">
+                <span class="sidebar-link-icon">💰</span>
+                <span>Relatório Financeiro</span>
+              </a>
+            </li>
+          {% endif %}
+
+          {% if request.user|has_group:"Administrador" or request.user|has_group:"Dentista" %}
+            <li>
+              <a href="{% url 'relatorio_dentistas' %}" class="sidebar-link">
+                <span class="sidebar-link-icon">📈</span>
+                <span>Relatório por Dentista</span>
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="sidebar-logout-item">
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="sidebar-logout-btn">
+                <span class="sidebar-link-icon">⏻</span>
+                <span>Sair</span>
+              </button>
+            </form>
+          </li>
+        </ul>
+      </aside>
+
+      <main class="content">
+        {% if messages %}
+          <div class="messages-wrap">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags|default:'info' }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+
+    </div>
+
+  {% else %}
+    <main class="public-content">
+      {% if messages %}
+        <div class="messages-wrap">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block public_content %}{% endblock %}
+    </main>
+  {% endif %}
+
+  <!-- MODAL GLOBAL -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal-container" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="modal-title">Título</h2>
+        <button type="button" class="modal-close" onclick="fecharModal()">✖</button>
+      </div>
+
+      <div id="modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- TOAST GLOBAL -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    function abrirModal(url, titulo = "") {
+      fetch(url, {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById("modal-body").innerHTML = html;
+        document.getElementById("modal-title").innerText = titulo;
+        document.getElementById("modal-overlay").classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      });
+    }
+
+    function fecharModal() {
+      const overlay = document.getElementById("modal-overlay");
+      overlay.classList.add("hidden");
+      document.getElementById("modal-body").innerHTML = "";
+      document.getElementById("modal-title").innerText = "Título";
+      document.body.style.overflow = "auto";
+    }
+
+    function mostrarToast(mensagem, tipo = "success") {
+      const toast = document.getElementById("toast");
+
+      toast.innerText = mensagem;
+      toast.className = `toast toast-${tipo} show`;
+
+      setTimeout(() => {
+        toast.className = "toast hidden";
+      }, 3000);
+    }
+
+    function enviarFormularioPaciente(event, form) {
+      event.preventDefault();
+
+      const formData = new FormData(form);
+      const botaoSalvar = form.querySelector('button[type="submit"]');
+
+      if (botaoSalvar) {
+        botaoSalvar.disabled = true;
+        botaoSalvar.innerText = "Salvando...";
+      }
+
+      fetch(form.action, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const total = document.getElementById("total-pacientes");
+          if (total) {
+            total.innerText = data.total_pacientes;
+          }
+
+          fecharModal();
+          mostrarToast("Paciente cadastrado com sucesso!");
+        } else {
+          mostrarToast("Erro ao salvar paciente", "error");
+        }
+      })
+      .catch(() => {
+        mostrarToast("Erro na requisição", "error");
+      })
+      .finally(() => {
+        if (botaoSalvar) {
+          botaoSalvar.disabled = false;
+          botaoSalvar.innerText = "Salvar";
+        }
+      });
+    }
+
+    document.getElementById("modal-overlay").addEventListener("click", function () {
+      fecharModal();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        fecharModal();
+      }
+    });
+  </script>
+
+</body>
+</html>

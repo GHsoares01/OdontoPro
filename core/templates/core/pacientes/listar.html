@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Pacientes</h1>
+
+  <div style="display:flex; gap:12px; align-items:center;">
+    <form method="GET" style="display:flex; gap:10px;">
+      <input type="text" name="q" placeholder="Buscar por nome ou CPF..." value="{{ q }}" />
+      <button class="btn" type="submit">Buscar</button>
+      <a class="btn" href="/pacientes/">Limpar</a>
+    </form>
+
+    <a class="btn primary" href="{% url 'cadastrar_paciente' %}">+ Novo Paciente</a>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Telefone</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for p in pacientes %}
+      <tr>
+        <td>{{ p.nome }}</td>
+        <td>{{ p.cpf }}</td>
+        <td>{{ p.telefone|default:"-" }}</td>
+        <td style="display:flex; gap:8px;">
+          <a class="btn btn-ghost" href="{% url 'detalhes_paciente' p.pk %}">Ver</a>
+          <a class="btn btn-ghost" href="{% url 'editar_paciente' p.pk %}">Editar</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4">Nenhum paciente encontrado.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

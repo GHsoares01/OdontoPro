@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Editar dentista</h1>
+    <p class="subtitle">{{ dentista.nome }}</p>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'lista_dentistas' %}">Voltar</a>
+  </div>
+</div>
+
+<section class="card" style="max-width:760px;">
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Salvar alterações</button>
+  </form>
+</section>
+
+{% endblock %}

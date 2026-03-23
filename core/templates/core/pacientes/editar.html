@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Editar paciente</h1>
+    <p class="subtitle">{{ paciente.nome }}</p>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'detalhes_paciente' paciente.pk %}">Cancelar</a>
+  </div>
+</div>
+
+<section class="card">
+  <form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Salvar alterações</button>
+  </form>
+</section>
+
+{% endblock %}

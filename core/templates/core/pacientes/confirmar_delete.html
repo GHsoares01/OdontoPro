@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Deletar Paciente</h1>
+    <a href="{% url 'detalhes_paciente' paciente.pk %}" class="btn btn-ghost">Voltar</a>
+</div>
+
+<div class="card" style="max-width: 700px;">
+    <p>Tem certeza que deseja deletar este paciente?</p>
+
+    <p><strong>Nome:</strong> {{ paciente.nome }}</p>
+    <p><strong>CPF:</strong> {{ paciente.cpf }}</p>
+    <p><strong>Telefone:</strong> {{ paciente.telefone|default:"-" }}</p>
+
+    <form method="post" style="margin-top:16px; display:flex; gap:10px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        <a href="{% url 'detalhes_paciente' paciente.pk %}" class="btn btn-ghost">Cancelar</a>
+    </form>
+</div>
+
+{% endblock %}

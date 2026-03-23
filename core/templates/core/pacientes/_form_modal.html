@@ -1,0 +1,18 @@
+<form method="post"
+      action="{% url 'cadastrar_paciente' %}"
+      onsubmit="enviarFormularioPaciente(event, this)">
+  {% csrf_token %}
+
+  <div class="modal-form-grid">
+    {{ form.as_p }}
+  </div>
+
+  <div class="modal-form-actions">
+    <button type="button" class="btn btn-ghost" onclick="fecharModal()">
+      Cancelar
+    </button>
+    <button type="submit" class="btn">
+      Salvar
+    </button>
+  </div>
+</form>

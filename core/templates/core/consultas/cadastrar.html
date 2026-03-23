@@ -1,0 +1,111 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Nova consulta</h1>
+    <p class="subtitle">Cadastre uma nova consulta da clínica</p>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'lista_consultas' %}">Voltar</a>
+  </div>
+</div>
+
+<div class="card-form">
+  <h2 class="card-title">Dados da consulta</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-error">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+
+        {% if field.help_text %}
+          <small class="muted">{{ field.help_text }}</small>
+        {% endif %}
+
+        {% if field.errors %}
+          <div class="form-error">
+            {{ field.errors }}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <div class="actions">
+      <button type="submit" class="btn">Salvar consulta</button>
+      <a href="{% url 'lista_consultas' %}" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const dataField = document.getElementById("id_data");
+  const dentistaField = document.getElementById("id_dentista");
+  const salaField = document.getElementById("id_sala");
+  const duracaoField = document.getElementById("id_duracao_minutos");
+  const horaField = document.getElementById("id_hora");
+
+  async function atualizarHorarios() {
+    if (!horaField) return;
+
+    const data = dataField?.value || "";
+    const dentista = dentistaField?.value || "";
+    const sala = salaField?.value || "";
+    const duracao = duracaoField?.value || "60";
+    const valorAtual = horaField.value || "";
+
+    if (!data) return;
+
+    const url = `/consultas/horarios-disponiveis/?data=${encodeURIComponent(data)}&dentista=${encodeURIComponent(dentista)}&sala=${encodeURIComponent(sala)}&duracao_minutos=${encodeURIComponent(duracao)}`;
+
+    try {
+      const response = await fetch(url);
+      const dados = await response.json();
+
+      horaField.innerHTML = "";
+
+      if (!dados.horarios || dados.horarios.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Nenhum horário disponível";
+        horaField.appendChild(option);
+        return;
+      }
+
+      dados.horarios.forEach(horario => {
+        const option = document.createElement("option");
+        option.value = horario;
+        option.textContent = horario;
+
+        if (horario === valorAtual) {
+          option.selected = true;
+        }
+
+        horaField.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Erro ao buscar horários:", error);
+    }
+  }
+
+  if (dataField) dataField.addEventListener("change", atualizarHorarios);
+  if (dentistaField) dentistaField.addEventListener("change", atualizarHorarios);
+  if (salaField) salaField.addEventListener("change", atualizarHorarios);
+  if (duracaoField) duracaoField.addEventListener("change", atualizarHorarios);
+
+  atualizarHorarios();
+});
+</script>
+
+{% endblock %}

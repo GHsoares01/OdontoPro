@@ -1,0 +1,128 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Relatório Financeiro</h1>
+    <p class="subtitle">Visão geral do faturamento da clínica</p>
+  </div>
+</div>
+
+<div class="cards">
+  <section class="card">
+    <h3>Faturamento total</h3>
+    <p>R$ {{ total_geral|floatformat:2 }}</p>
+  </section>
+
+  <section class="card">
+    <h3>Faturamento hoje</h3>
+    <p>R$ {{ total_hoje|floatformat:2 }}</p>
+  </section>
+
+  <section class="card">
+    <h3>Faturamento do mês</h3>
+    <p>R$ {{ total_mes|floatformat:2 }}</p>
+  </section>
+</div>
+
+<section class="card" style="margin-top:18px;">
+  <h2 class="card-title">Faturamento por mês</h2>
+  <canvas id="graficoFinanceiro" height="90"></canvas>
+</section>
+
+<section class="card" style="margin-top:18px;">
+  <h2 class="card-title">Procedimentos mais feitos</h2>
+
+  {% if procedimentos_mais_feitos %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Procedimento</th>
+            <th>Quantidade</th>
+            <th>Valor total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in procedimentos_mais_feitos %}
+            <tr>
+              <td>{{ item.descricao }}</td>
+              <td>{{ item.total }}</td>
+              <td>R$ {{ item.valor_total|floatformat:2 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">Nenhum procedimento encontrado.</p>
+  {% endif %}
+</section>
+
+<section class="card" style="margin-top:18px;">
+  <h2 class="card-title">Pacientes que mais gastaram</h2>
+
+  {% if pacientes_que_mais_gastaram %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Paciente</th>
+            <th>Qtd. procedimentos</th>
+            <th>Total gasto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in pacientes_que_mais_gastaram %}
+            <tr>
+              <td>{{ item.paciente__nome }}</td>
+              <td>{{ item.total_proc }}</td>
+              <td>R$ {{ item.total_gasto|floatformat:2 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">Nenhum paciente encontrado.</p>
+  {% endif %}
+</section>
+
+{{ labels_meses|json_script:"labels-meses" }}
+{{ valores_meses|json_script:"valores-meses" }}
+
+<script>
+  const labelsMeses = JSON.parse(document.getElementById("labels-meses").textContent);
+  const valoresMeses = JSON.parse(document.getElementById("valores-meses").textContent);
+
+  const ctx = document.getElementById("graficoFinanceiro");
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labelsMeses,
+      datasets: [{
+        label: "Faturamento mensal",
+        data: valoresMeses,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

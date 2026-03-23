@@ -1,0 +1,24 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Deletar Procedimento</h1>
+    <a href="{% url 'detalhes_paciente' procedimento.paciente.pk %}" class="btn btn-ghost">Voltar</a>
+</div>
+
+<div class="card" style="max-width: 700px;">
+    <p>Tem certeza que deseja deletar este procedimento?</p>
+
+    <p><strong>Paciente:</strong> {{ procedimento.paciente.nome }}</p>
+    <p><strong>Descrição:</strong> {{ procedimento.descricao }}</p>
+    <p><strong>Data:</strong> {{ procedimento.data|date:"d/m/Y" }}</p>
+    <p><strong>Valor:</strong> R$ {{ procedimento.valor }}</p>
+
+    <form method="post" style="margin-top:16px; display:flex; gap:10px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        <a href="{% url 'detalhes_paciente' procedimento.paciente.pk %}" class="btn btn-ghost">Cancelar</a>
+    </form>
+</div>
+
+{% endblock %}

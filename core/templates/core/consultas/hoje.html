@@ -1,0 +1,133 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="title">Agenda do Dia</h1>
+    <p class="subtitle">{{ hoje|date:"d/m/Y" }}</p>
+  </div>
+
+  <div class="header-actions">
+    <a class="btn btn-ghost" href="{% url 'agenda_completa' %}">Ver agenda completa</a>
+    <a class="btn" href="{% url 'cadastrar_consulta' %}?data={{ hoje|date:'Y-m-d' }}">Nova consulta</a>
+  </div>
+</div>
+
+<section class="calendar-filters card" style="margin-bottom: 18px;">
+  <form method="get" class="calendar-filter-form">
+    <div class="calendar-filter-group">
+      <label for="dentista">Filtrar por dentista</label>
+      <select name="dentista" id="dentista" onchange="this.form.submit()">
+        <option value="">Todos os dentistas</option>
+        {% for dentista in dentistas %}
+          <option value="{{ dentista.id }}" {% if dentista_selecionado == dentista.id|stringformat:"s" %}selected{% endif %}>
+            {{ dentista.nome }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+</section>
+
+<section class="day-agenda-wrap">
+  <div class="day-agenda-header">
+    <div class="day-agenda-header-left">
+      <h2 class="day-agenda-title">Linha do tempo do dia</h2>
+      <p class="day-agenda-text">Consultas agendadas para hoje</p>
+    </div>
+  </div>
+
+  {% if consultas %}
+    <div class="day-timeline">
+      {% for consulta in consultas %}
+        <div class="day-slot-real">
+          <div class="day-slot-time-real">
+            {{ consulta.hora|time:"H:i" }}
+          </div>
+
+          <div class="day-slot-line">
+            <span class="day-slot-dot" style="background: {{ consulta.cor_dentista }};"></span>
+          </div>
+
+          <div class="day-consulta-card" style="border-left: 5px solid {{ consulta.cor_dentista }};">
+            <div class="day-consulta-main">
+              <div class="day-consulta-top">
+                <h3 class="day-consulta-paciente">{{ consulta.paciente.nome }}</h3>
+
+                <div class="day-consulta-status">
+                  {% if consulta.status == "agendado" %}
+                    <span class="badge badge-blue">Agendado</span>
+                  {% elif consulta.status == "confirmado" %}
+                    <span class="badge badge-green">Confirmado</span>
+                  {% elif consulta.status == "cancelado" %}
+                    <span class="badge badge-red">Cancelado</span>
+                  {% elif consulta.status == "concluido" %}
+                    <span class="badge badge-gray">Concluído</span>
+                  {% else %}
+                    <span class="badge badge-gray">{{ consulta.status }}</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="day-consulta-meta">
+                <div class="dentista-label-color">
+                  <span class="dentista-label-dot" style="background: {{ consulta.cor_dentista }};"></span>
+                  <strong>Dentista:</strong>
+                  {% if consulta.dentista %}
+                    {{ consulta.dentista.nome }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </div>
+
+                <div>
+                  <strong>Sala:</strong>
+                  {% if consulta.sala %}
+                    {{ consulta.sala.nome }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </div>
+
+                {% if consulta.observacoes %}
+                  <div class="day-consulta-obs">
+                    <strong>Obs:</strong> {{ consulta.observacoes }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="day-consulta-actions">
+              {% if consulta.status != "concluido" %}
+                <form method="post" action="{% url 'atualizar_status_consulta' consulta.pk 'concluido' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm">Concluir</button>
+                </form>
+              {% endif %}
+
+              {% if consulta.status != "cancelado" %}
+                <form method="post" action="{% url 'atualizar_status_consulta' consulta.pk 'cancelado' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                </form>
+              {% endif %}
+
+              <a class="btn btn-ghost btn-sm" href="{% url 'editar_consulta' consulta.pk %}">
+                Editar
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="day-empty-state">
+      <div class="day-empty-icon">🗓️</div>
+      <h3>Nenhuma consulta para hoje</h3>
+      <p>Você ainda não possui consultas cadastradas nesta data.</p>
+      <a class="btn" href="{% url 'cadastrar_consulta' %}?data={{ hoje|date:'Y-m-d' }}">Cadastrar consulta</a>
+    </div>
+  {% endif %}
+</section>
+
+{% endblock %}

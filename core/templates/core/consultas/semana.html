@@ -1,0 +1,194 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div class="week-shell">
+  <div class="week-top-actions">
+    <div class="week-search-box">
+      <input type="text" placeholder="Buscar paciente">
+    </div>
+
+    <div class="week-top-buttons">
+      <a class="btn btn-ghost" href="{% url 'cadastrar_consulta' %}">Nova consulta</a>
+      <a class="btn" href="{% url 'agenda_semanal' %}?semana=0">Semana Atual</a>
+      <a class="week-icon-btn" href="{% url 'agenda_semanal' %}?semana={{ semana_anterior }}">‹</a>
+      <a class="week-icon-btn" href="{% url 'agenda_semanal' %}?semana={{ proxima_semana }}">›</a>
+    </div>
+  </div>
+
+  <div class="week-calendar-pro">
+    <div class="week-calendar-pro-header">
+      <div class="week-calendar-title-left">
+        <h2>Agenda • Clínica</h2>
+      </div>
+
+      <div class="week-calendar-range">
+        {{ inicio_semana|date:"d/m/Y" }} <span>-</span> {{ fim_semana|date:"d/m/Y" }}
+      </div>
+
+      <div class="week-calendar-nav">
+        <a class="week-icon-btn" href="{% url 'agenda_semanal' %}?semana={{ semana_anterior }}">‹</a>
+        <a class="week-nav-center" href="{% url 'agenda_semanal' %}?semana=0">Semana Atual</a>
+        <a class="week-icon-btn" href="{% url 'agenda_semanal' %}?semana={{ proxima_semana }}">›</a>
+      </div>
+    </div>
+
+    <div class="week-grid-pro">
+      <div class="week-grid-head-empty"></div>
+
+      {% for dia in dias_semana %}
+        <div class="week-grid-head-day">
+          <div class="week-grid-head-name">
+            {% if dia.weekday == 0 %}segunda-feira{% elif dia.weekday == 1 %}terça-feira{% elif dia.weekday == 2 %}quarta-feira{% elif dia.weekday == 3 %}quinta-feira{% elif dia.weekday == 4 %}sexta-feira{% elif dia.weekday == 5 %}sábado{% else %}domingo{% endif %}
+          </div>
+          <div class="week-grid-head-date">{{ dia|date:"d/m" }}</div>
+        </div>
+      {% endfor %}
+
+      <div class="week-grid-time-col">
+        {% for horario in horarios %}
+          <div class="week-grid-time-slot">{{ horario }}</div>
+        {% endfor %}
+      </div>
+
+      {% for dia in dias_semana %}
+        <div class="week-grid-day-col">
+          {% for horario in horarios %}
+            <div class="week-grid-line week-drop-slot"
+                 data-date="{{ dia|date:'Y-m-d' }}"
+                 data-hour="{{ horario }}"></div>
+          {% endfor %}
+
+          {% for item in consultas_formatadas %}
+            {% if item.dia_index == forloop.parentloop.counter0 %}
+              <a href="{% url 'editar_consulta' item.obj.pk %}"
+               class="week-card-pro week-draggable-card"
+               draggable="true"
+              data-consulta-id="{{ item.obj.pk }}"
+              style="
+                  top: {{ item.top }}px;
+                  height: {{ item.altura }}px;
+                  border-left:5px solid {{ item.obj.cor_dentista }};
+                  background: color-mix(in srgb, {{ item.obj.cor_dentista }} 22%, white);">
+
+                <div class="week-card-title">
+                  {{ item.obj.paciente.nome }}
+                </div>
+
+                <div class="week-card-badge">
+                  {% if item.obj.status == "agendado" %}
+                    <span class="badge badge-blue">Agendado</span>
+                  {% elif item.obj.status == "confirmado" %}
+                    <span class="badge badge-green">Confirmado</span>
+                  {% elif item.obj.status == "cancelado" %}
+                    <span class="badge badge-red">Cancelado</span>
+                  {% elif item.obj.status == "concluido" %}
+                    <span class="badge badge-gray">Concluído</span>
+                  {% else %}
+                    <span class="badge badge-gray">{{ item.obj.status }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="week-card-dentista">
+                  {% if item.obj.dentista %}
+                    {{ item.obj.dentista.nome }}
+                  {% else %}
+                    Sem dentista
+                  {% endif %}
+                </div>
+
+                <div class="week-card-meta">
+                  {{ item.obj.hora|time:"H:i" }}
+                  {% if item.obj.sala %} • {{ item.obj.sala.nome }}{% endif %}
+                  • {{ item.obj.duracao_minutos }} min
+                </div>
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  let consultaIdAtual = null;
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + "=")) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  const csrfToken = getCookie("csrftoken");
+
+  document.querySelectorAll(".week-draggable-card").forEach(card => {
+    card.addEventListener("dragstart", function (e) {
+      consultaIdAtual = this.dataset.consultaId;
+      this.classList.add("week-card-dragging");
+      e.dataTransfer.effectAllowed = "move";
+    });
+
+    card.addEventListener("dragend", function () {
+      this.classList.remove("week-card-dragging");
+    });
+  });
+
+  document.querySelectorAll(".week-drop-slot").forEach(slot => {
+    slot.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      this.classList.add("week-drop-slot-hover");
+    });
+
+    slot.addEventListener("dragleave", function () {
+      this.classList.remove("week-drop-slot-hover");
+    });
+
+    slot.addEventListener("drop", async function (e) {
+      e.preventDefault();
+      this.classList.remove("week-drop-slot-hover");
+
+      if (!consultaIdAtual) return;
+
+      const data = this.dataset.date;
+      const hora = this.dataset.hour;
+
+      try {
+        const formData = new FormData();
+        formData.append("data", data);
+        formData.append("hora", hora);
+
+        const response = await fetch(`/consultas/${consultaIdAtual}/mover/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken
+          },
+          body: formData
+        });
+
+        const resultado = await response.json();
+
+        if (resultado.ok) {
+          window.location.reload();
+        } else {
+          alert(resultado.erro || "Não foi possível mover a consulta.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao mover consulta.");
+      }
+    });
+  });
+});
+</script>
+
+{% endblock %}
