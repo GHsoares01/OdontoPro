@@ -55,7 +55,7 @@ Criar uma plataforma SaaS moderna, escalável e acessível, capaz de competir co
 
 ## 📸 Preview
 
-> Em breve imagens do sistema
+> Radm.png  la voçe vai ver o preview
 
 ---
 
